@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { SupabaseModule } from './supabase/supabase.module';
-import { SessionModule } from './session/session.module';
+import { AppController } from './app.controller';
+import { ChatModule } from './chat/chat.module';
 import { MenuModule } from './menu/menu.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentModule } from './payment/payment.module';
-import { ChatModule } from './chat/chat.module';
+import { SessionModule } from './session/session.module';
+import { SupabaseModule } from './supabase/supabase.module';
 
 @Module({
     imports: [
@@ -17,5 +18,6 @@ import { ChatModule } from './chat/chat.module';
         PaymentModule,
         ChatModule,
     ],
+    controllers: [AppController],
 })
 export class AppModule {}
