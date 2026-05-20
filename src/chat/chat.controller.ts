@@ -27,3 +27,13 @@ export class ChatController {
         return { message };
     }
 
+    @Post('webhook')
+    @HttpCode(200)
+    async handleWebhook(
+        @Req() req: RawBodyRequest<Request>,
+        @Headers('x-paystack-signature') signature: string,
+    ) {
+        await this.chatService.handleWebhook(req.rawBody!, signature);
+        return { received: true };
+    }
+}

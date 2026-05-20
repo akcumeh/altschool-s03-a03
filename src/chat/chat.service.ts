@@ -14,6 +14,7 @@ export class ChatService {
         private sessions: SessionService,
         private menu: MenuService,
         private orders: OrdersService,
+        private payment: PaymentService,
     ) {}
 
     async processMessage(deviceId: string, option: string): Promise<string> {
@@ -69,6 +70,45 @@ export class ChatService {
         return `Added ${selectedItem.name} to your order.\n\nSend another number to add more, or:\n99 - Checkout\n97 - View current order\n0 - Cancel`;
     }
 
+    private async handleCheckout(session: any): Promise<string> {
+        const order = await this.orders.getCurrentOrder(session.id);
+        if (!order?.order_items?.length) {
+            return `No order to place.\n\nSend 1 to start a new order.`;
+        }
+
+        await this.sessions.updateState(session.id, 'awaiting_email');
+        const summary = this.orders.formatOrder(order);
+        return `${summary}\n\nTo complete payment, please reply with your email address.`;
+    }
+
+    private async handleEmail(session: any, email: string): Promise<string> {
+        if (!isEmail(email)) {
+            return `That doesn't look like a valid email. Please reply with your email address.`;
+        }
+
+        const order = await this.orders.getCurrentOrder(session.id);
+        if (!order?.order_items?.length) {
+            await this.sessions.updateState(session.id, 'idle');
+            return `Your order is empty. Send 1 to start a new order.`;
+        }
+
+        const total = order.order_items.reduce(
+            (sum: number, oi: any) => sum + oi.menu_items.price * oi.quantity,
+            0,
+        );
+
+        const { authorization_url } = await this.payment.initializeTransaction(
+            email,
+            total,
+            order.id,
+        );
+
+        await this.orders.markAsPlaced(order.id);
+        await this.sessions.updateState(session.id, 'idle');
+
+        return `Order placed! Complete your payment here:\n${authorization_url}\n\nSend 1 to start a new order after payment.`;
+    }
+
     private async handleHistory(session: any): Promise<string> {
         const history = await this.orders.getHistory(session.id);
         if (!history?.length)
@@ -100,4 +140,18 @@ export class ChatService {
         return `Order cancelled.\n\nSend 1 to place a new order.`;
     }
 
+    async handleWebhook(rawBody: Buffer, signature: string): Promise<void> {
+        const isValid = this.payment.verifyWebhookSignature(rawBody, signature);
+        if (!isValid) throw new Error('Invalid webhook signature');
+
+        const event = JSON.parse(rawBody.toString()) as {
+            event: string;
+            data: { metadata: { orderId: string } };
+        };
+
+        if (event.event === 'charge.success') {
+            const { orderId } = event.data.metadata;
+            await this.payment.handleChargeSuccess(orderId);
+        }
+    }
 }

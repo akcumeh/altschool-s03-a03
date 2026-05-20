@@ -85,6 +85,16 @@ export class OrdersService {
         return data;
     }
 
+    async markAsPlaced(orderId: string) {
+        const { error } = await this.supabase
+            .getClient()
+            .from('orders')
+            .update({ status: 'placed' })
+            .eq('id', orderId);
+
+        if (error) throw new Error(`Failed to place order: ${error.message}`);
+    }
+
     formatOrder(order: any): string {
         if (!order?.order_items?.length) return 'Your order is empty.';
 
