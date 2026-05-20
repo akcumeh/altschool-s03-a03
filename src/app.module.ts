@@ -8,6 +8,14 @@ import { PaymentModule } from './payment/payment.module';
 import { ChatModule } from './chat/chat.module';
 
 @Module({
-    imports: [ConfigModule.forRoot({ isGlobal: true }), SupabaseModule, SessionModule, MenuModule, OrdersModule, PaymentModule, ChatModule],
+    imports: [
+        ConfigModule.forRoot({ isGlobal: true }),
+        SupabaseModule,
+        SessionModule,
+        MenuModule,
+        OrdersModule,
+        PaymentModule,
+        ChatModule,
+    ],
 })
-export class AppModule { }
+export class AppModule {}
