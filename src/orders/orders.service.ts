@@ -91,7 +91,7 @@ export class OrdersService {
         const items = order.order_items
             .map(
                 (oi: any) =>
-                    `- ${oi.menu_items.name} x${oi.quantity} (NGN${oi.menu_items.price * oi.quantity})`,
+                    `- ${oi.menu_items.name} x${oi.quantity} (NGN ${oi.menu_items.price * oi.quantity})`,
             )
             .join('\n');
 
@@ -100,6 +100,6 @@ export class OrdersService {
             0,
         );
 
-        return `Current order:\n${items}\n\nTotal: NGN${total}`;
+        return `Current order:\n${items}\n\nTotal: NGN ${total}`;
     }
 }
