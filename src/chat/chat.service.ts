@@ -19,14 +19,14 @@ export class ChatService {
 
     async processMessage(deviceId: string, option: string): Promise<string> {
         const session = await this.sessions.getOrCreate(deviceId);
+        const trimmed = option.trim();
 
         if (session.state === 'awaiting_email') {
-            return this.handleEmail(session, option.trim());
+            return this.handleEmail(session, trimmed);
         }
 
-        switch (option.trim()) {
-            case '1':
-                return this.handlePlaceOrder(session);
+        // These four always work regardless of state — they are escape commands
+        switch (trimmed) {
             case '99':
                 return this.handleCheckout(session);
             case '98':
@@ -37,8 +37,14 @@ export class ChatService {
                 return this.handleCancel(session);
         }
 
+        // When ordering, every number (including 1) is a menu item selection
         if (session.state === 'ordering') {
-            return this.handleMenuSelection(session, option.trim());
+            return this.handleMenuSelection(session, trimmed);
+        }
+
+        // Only at idle does 1 mean "show me the menu"
+        if (trimmed === '1') {
+            return this.handlePlaceOrder(session);
         }
 
         return `Invalid option.\n\n${MAIN_MENU}`;
