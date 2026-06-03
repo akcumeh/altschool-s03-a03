@@ -15,6 +15,7 @@ async function bootstrap() {
         new ExpressAdapter(server),
         { rawBody: true },
     );
+    app.enableCors();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
     await app.init();
     initialized = true;

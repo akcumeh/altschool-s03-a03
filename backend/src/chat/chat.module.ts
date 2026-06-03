@@ -3,7 +3,7 @@ import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { MenuModule } from '../menu/menu.module';
 import { OrdersModule } from '../orders/orders.module';
-import { PaymentModule } from 'src/payment/payment.module';
+import { PaymentModule } from '../payment/payment.module';
 import { SessionModule } from '../session/session.module';
 
 @Module({
